@@ -106,3 +106,21 @@ plot(allEffects(hyp.out))
 ##   Note that the data is not perfectly clean and ready to be modeled. You
 ##   will need to clean up at least some of the variables before fitting
 ##   the model.
+library(mice)
+# Create a version of the dataset that has only the columns
+# relevant to our logistic regression
+simple = NH11[c("everwrk", "age_p", "r_maritl")]
+summary(simple)
+set.seed(100)
+# Replace all the NA values in the everwrk column with imputation
+imputed = complete(mice(simple))
+summary(imputed)
+NH11$everwrk = imputed$everwrk
+
+everwrk.out <- glm(everwrk ~ age_p + r_maritl,
+                   data=NH11, family="binomial")
+everwrk.out.tab <- coef(summary(everwrk.out))
+# Provide estimates for the coefficients in our regression
+everwrk.out.tab[, "Estimate"] <- exp(coef(everwrk.out))
+everwrk.out.tab
+plot(Effect("r_maritl", everwrk.out))
